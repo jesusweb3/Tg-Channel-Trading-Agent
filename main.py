@@ -2,6 +2,7 @@
 
 import asyncio
 from src.telegram.auth import auth
+from src.telegram.parser import ChannelParser
 from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -11,14 +12,24 @@ async def main():
     try:
         logger.info('Запуск приложения')
 
-        await auth.get_client()
+        client = await auth.get_client()
 
-        await auth.disconnect()
-        logger.info('Приложение завершено успешно')
+        parser = ChannelParser(client)
+        await parser.start()
 
+        await asyncio.sleep(float('inf'))
+
+    except asyncio.CancelledError:
+        logger.info('Получен сигнал остановки')
     except Exception as e:
-        logger.error(f'Ошибка: {e}')
+        logger.error(f'Ошибка: {e}', exc_info=True)
+    finally:
+        await auth.disconnect()
+        logger.info('Приложение завершено')
 
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        pass
