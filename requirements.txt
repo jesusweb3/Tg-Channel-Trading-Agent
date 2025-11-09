@@ -1,3 +1,4 @@
 telethon==1.41.2
 python-dotenv==1.2.1
 httpx==0.28.1
+pybit==5.11.0
