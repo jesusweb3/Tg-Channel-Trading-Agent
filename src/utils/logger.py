@@ -50,8 +50,7 @@ def get_logger(name: str, level: int = logging.INFO) -> logging.Logger:
     if not os.path.exists(logs_dir):
         os.makedirs(logs_dir)
 
-    current_date = datetime.now().strftime('%Y-%m-%d')
-    log_file_path = os.path.join(logs_dir, f"{current_date}.log")
+    log_file_path = os.path.join(logs_dir, "logs.txt")
 
     file_handler = logging.FileHandler(log_file_path, mode='a', encoding='utf-8')
     file_handler.setLevel(level)

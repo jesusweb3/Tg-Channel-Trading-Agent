@@ -38,7 +38,8 @@ class ChannelParser:
             if not message_text:
                 return
 
-            self.logger.info(f'Получено сообщение из канала: {message_text}')
+            escaped_text = message_text.replace('\n', '\\n')
+            self.logger.info(f'Получено сообщение из канала: {{text: "{escaped_text}"}}')
 
         except Exception as e:
             self.logger.error(f'Ошибка обработки сообщения: {e}', exc_info=True)
