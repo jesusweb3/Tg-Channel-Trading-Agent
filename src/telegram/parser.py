@@ -1,5 +1,6 @@
 # src/telegram/parser.py
 
+import asyncio
 from telethon import TelegramClient, events
 from src.utils.config import config
 from src.utils.logger import get_logger
@@ -14,12 +15,15 @@ logger = get_logger(__name__)
 class ChannelParser:
     """Парсер сообщений из Telegram канала с обработкой торговых сигналов"""
 
+    MONITOR_INTERVAL = 10
+
     def __init__(self, client: TelegramClient, strategy: TradingStrategy):
         self.client = client
         self.channel_id = int(config.CHANNEL_ID)
         self.strategy = strategy
+        self._connection_state: bool | None = None
 
-    async def start(self):
+    async def start(self) -> None:
         """Запуск прослушивания канала"""
         try:
             entity = await self.client.get_entity(self.channel_id)
@@ -34,7 +38,30 @@ class ChannelParser:
         async def handler(event):
             await self._handle_message(event)
 
+        asyncio.create_task(self._monitor_connection())
+
         logger.info('Парсер активен, ожидание новых сообщений')
+
+    async def _monitor_connection(self) -> None:
+        """Мониторить состояние соединения с Telegram"""
+        try:
+            while True:
+                is_connected = self.client.is_connected()
+
+                if self._connection_state is None:
+                    self._connection_state = is_connected
+                elif self._connection_state != is_connected:
+                    if is_connected:
+                        logger.info('Telethon: соединение восстановлено')
+                    else:
+                        logger.warning('Telethon: соединение потеряно')
+                    self._connection_state = is_connected
+
+                await asyncio.sleep(self.MONITOR_INTERVAL)
+
+        except asyncio.CancelledError:
+            logger.info('Мониторинг соединения остановлен')
+            raise
 
     @safe_handler
     async def _handle_message(self, event):
