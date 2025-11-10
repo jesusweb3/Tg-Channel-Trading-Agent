@@ -6,6 +6,7 @@ from src.utils.logger import get_logger
 from src.ai.classifier import classify
 from src.trading.signal_parser import parse
 from src.trading.strategy import TradingStrategy
+from src.telegram.handler_wrapper import safe_handler
 
 logger = get_logger(__name__)
 
@@ -35,25 +36,22 @@ class ChannelParser:
 
         logger.info('Парсер активен, ожидание новых сообщений')
 
+    @safe_handler
     async def _handle_message(self, event):
         """Обработка нового сообщения из канала"""
-        try:
-            message_text = event.message.text
+        message_text = event.message.text
 
-            if not message_text:
-                return
+        if not message_text:
+            return
 
-            escaped_text = message_text.replace('\n', '\\n')
-            logger.info(f'Получено сообщение из канала: {{text: "{escaped_text}"}}')
+        escaped_text = message_text.replace('\n', '\\n')
+        logger.info(f'Получено сообщение из канала: {{text: "{escaped_text}"}}')
 
-            # Классифицировать сообщение через ИИ
-            ai_response = await classify(message_text)
+        # Классифицировать сообщение через ИИ
+        ai_response = await classify(message_text)
 
-            # Распарсить ответ ИИ в сигнал
-            signal = parse(ai_response)
+        # Распарсить ответ ИИ в сигнал
+        signal = parse(ai_response)
 
-            # Обработать сигнал стратегией
-            await self.strategy.process_signal(signal)
-
-        except Exception as e:
-            logger.error(f'Ошибка обработки сообщения: {e}', exc_info=True)
+        # Обработать сигнал стратегией
+        await self.strategy.process_signal(signal)
