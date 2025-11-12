@@ -41,6 +41,7 @@ class PromptManager:
     INSTRUCTION = """На основе примеров, классифицируй сообщение и ответь одной строкой:
 
 Если это сигнал входа (ENTRY):
+- TP и SL пиши ТОЛЬКО как числа без символов (например 120000, не 120000$)
 - {ASSET} Long Leverage:{value}x TP:{price} SL:{price}
 - {ASSET} Short Leverage:{value}x TP:{price} SL:{price}
 - Если TP, SL или Leverage отсутствуют, пишите N/A (например: BTC Long Leverage:N/ATP:120000 SL:N/A)
